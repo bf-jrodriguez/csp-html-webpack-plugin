@@ -306,10 +306,11 @@ class CspHtmlWebpackPlugin {
 
   /**
    * Processes HtmlWebpackPlugin's html data adding the CSP defined
-   * @param htmlPluginData
-   * @param compileCb
+   * @param {object} compilation
+   * @param {object} htmlPluginData
+   * @param {function} compileCb
    */
-  processCsp(htmlPluginData, compileCb) {
+  processCsp(compilation, htmlPluginData, compileCb) {
     const $ = cheerio.load(htmlPluginData.html, {
       decodeEntities: false,
     });
@@ -339,7 +340,7 @@ class CspHtmlWebpackPlugin {
       ),
     });
 
-    this.processFn(builtPolicy, htmlPluginData, $);
+    this.processFn(builtPolicy, htmlPluginData, $, compilation);
 
     return compileCb(null, htmlPluginData);
   }
@@ -363,7 +364,7 @@ class CspHtmlWebpackPlugin {
           /* istanbul ignore next */
           HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync(
             'CspHtmlWebpackPlugin',
-            this.processCsp.bind(this)
+            this.processCsp.bind(this, compilation)
           );
         } else if (
           compilation.hooks.htmlWebpackPluginBeforeHtmlGeneration &&
@@ -376,7 +377,7 @@ class CspHtmlWebpackPlugin {
           );
           compilation.hooks.htmlWebpackPluginAfterHtmlProcessing.tapAsync(
             'CspHtmlWebpackPlugin',
-            this.processCsp.bind(this)
+            this.processCsp.bind(this, compilation)
           );
         }
       });
@@ -389,7 +390,7 @@ class CspHtmlWebpackPlugin {
         );
         compilation.plugin(
           'html-webpack-plugin-after-html-processing',
-          this.processCsp.bind(this)
+          this.processCsp.bind(this, compilation)
         );
       });
     }
